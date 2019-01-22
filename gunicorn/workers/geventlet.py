@@ -6,6 +6,7 @@
 from functools import partial
 import errno
 import os
+from pkg_resources import parse_version
 import sys
 
 try:
@@ -13,10 +14,8 @@ try:
 except ImportError:
     raise RuntimeError("You need eventlet installed to use this worker.")
 
-# validate the eventlet version
-if eventlet.version_info < (0, 9, 7):
-    raise RuntimeError("You need eventlet >= 0.9.7")
-
+if parse_version(eventlet.__version__) < parse_version('0.19'):
+    raise RuntimeError("You need eventlet >= 0.19 to use this worker.")
 
 from eventlet import hubs, greenthread
 from eventlet.greenio import GreenSocket
@@ -86,7 +85,7 @@ class EventletWorker(AsyncWorker):
 
     def patch(self):
         hubs.use_hub()
-        eventlet.monkey_patch(os=False)
+        eventlet.monkey_patch()
         patch_sendfile()
 
     def is_already_handled(self, respiter):
